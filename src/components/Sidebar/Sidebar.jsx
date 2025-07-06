@@ -1,28 +1,48 @@
-import React, { useState } from 'react'
+import React, { useContext } from 'react'
 import './Sidebar.css'
 import {assets} from '../../assets/assets'
-const Sidebar = () => {
+import { Context } from '../../context/context'
 
-    const [extended, setExtended] = React.useState(false)
+const Sidebar = () => {
+    const [extended, setExtended] = React.useState(false);
+    const { recentPrompts, loadConversation, setCurrentChat } = useContext(Context);
+
+    const truncatePrompt = (text, maxLength = 25) => {
+      return text?.length > maxLength ? `${text.substring(0, maxLength)}...` : text;
+    };
+
+    const handlePromptClick = (prompt) => {
+      loadConversation(prompt);
+    };
+
+    const handleNewChat = () => {
+      setCurrentChat([]);
+    };
 
   return (
     <div className="sidebar">
       <div className="top">
         <img onClick = {()=>setExtended(prev=>!prev)} className="menu" src={assets.menu_icon} alt=""/>
-        <div className="new-chat">
+        <div className="new-chat" onClick={handleNewChat}>
           <img src={assets.plus_icon} alt=""/>
           {extended?<p>New Chat</p>:null}
         </div>
 
-        {extended?
-        <div className="recent">
-          <p className="recent-title">Recent</p>
-          <div className="recent-entry">
-            <img src={assets.message_icon} alt=""/>
-            <p>What is React ...</p>
+        {extended && recentPrompts.length > 0 ? (
+          <div className="recent">
+            <p className="recent-title">Recent</p>
+            {recentPrompts.map((prompt, index) => (
+              <div
+                key={index}
+                className="recent-entry"
+                onClick={() => handlePromptClick(prompt)}
+              >
+                <img src={assets.message_icon} alt=""/>
+                <p>{truncatePrompt(prompt)}</p>
+              </div>
+            ))}
           </div>
-        </div>
-        :null}
+        ) : null}
 
       </div>
 
