@@ -4,46 +4,35 @@ import {assets} from '../../assets/assets';
 import { Context } from '../../context/context';
 
 const Main = () => {
-  // States for handling the chat functionality
   const [prompt, setPrompt] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [chatMessages, setChatMessages] = useState([]);
-  const { onSent } = useContext(Context);
+  const { onSent, currentChat, setCurrentChat } = useContext(Context);
   const bottomRef = useRef(null);
 
-  // Function to handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     if(!prompt.trim()) return;
 
     try {
-      // Add user message to chat
-      const userMessage = { role: 'user', content: prompt };
-      setChatMessages(prev => [...prev, userMessage]);
+      setCurrentChat(prev => [...prev, { role: 'user', content: prompt }]);
 
-      // Start loading state
       setIsLoading(true);
 
-      // Send to Gemini and get response
       const response = await onSent(prompt);
 
-      // Add Gemini response to chat
-      setChatMessages(prev => [...prev, { role: 'gemini', content: response }]);
     } catch (error) {
       console.error("Error getting response:", error);
-      setChatMessages(prev => [...prev, { role: 'gemini', content: "Sorry, I encountered an error. Please try again later." }]);
+      setCurrentChat(prev => [...prev, { role: 'gemini', content: "Sorry, I encountered an error. Please try again later." }]);
     } finally {
       setIsLoading(false);
       setPrompt("");
     }
   };
 
-  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chatMessages]);
+  }, [currentChat]);
 
-  // Function to handle card clicks - prefill input with card text
   const handleCardClick = (text) => {
     setPrompt(text);
   };
@@ -55,7 +44,7 @@ const Main = () => {
         <img src={assets.user_icon} alt="" />
       </div>
       <div className="main-container">
-        {chatMessages.length === 0 ? (
+        {currentChat.length === 0 ? (
           <>
             <div className="greet">
               <p><span>Hello, DEV.</span></p>
@@ -82,7 +71,7 @@ const Main = () => {
           </>
         ) : (
           <div className="chat-container">
-            {chatMessages.map((message, index) => (
+            {currentChat.map((message, index) => (
               <div key={index} className={`chat-message ${message.role}`}>
                 <div className="message-icon">
                   {message.role === 'user' ?
@@ -129,7 +118,7 @@ const Main = () => {
               </button>
             </div>
           </form>
-          {chatMessages.length === 0 && (
+          {currentChat.length === 0 && (
             <p className="bottom-info">
               Gemini is a large multimodal model that can accept images and text as input, and generate text as output. It is designed to be helpful, honest, and harmless.
             </p>
