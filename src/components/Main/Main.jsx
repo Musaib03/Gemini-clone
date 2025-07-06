@@ -14,7 +14,11 @@ const Main = () => {
     if(!prompt.trim()) return;
 
     try {
-      setCurrentChat(prev => [...prev, { role: 'user', content: prompt }]);
+      if (currentChat.length === 0) {
+        setCurrentChat([{ role: 'user', content: prompt }]);
+      } else {
+        setCurrentChat(prev => [...prev, { role: 'user', content: prompt }]);
+      }
 
       setIsLoading(true);
 
